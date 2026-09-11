@@ -1,0 +1,120 @@
+'' Engelse vertalingen voor Lijstjes.
+'' Formaat: <Nederlandse brontekst> => <vertaling>
+'' Regels die met een ' beginnen, of leeg zijn, worden genegeerd.
+'' Dit bestand hoort naast lijstjes.bas / het gecompileerde programma te staan.
+
+'' --- paneelkoppen / titelbalk ---
+Lijstjes => Lists
+(geen lijstjes) => (no lists)
+
+'' --- status- en helpbalk onderaan ---
+Welkom => Welcome
+F1 voor hulp => F1 for help
+Lijstje => List
+regel => line
+open => open
+Geen lijstjes in => No lists in
+F1 Hulp F2 Naam F4 Nieuw F5 Wis F9 Zoek r Reset ~ Kleur ^Q Stop Tab => F1 Help F2 Name F4 New F5 Del F9 Search r Reset ~ Color ^Q Quit Tab
+F1 Hulp F2 Bewerk F3 Nieuw F5 Wis F6/F7 Schuif F9 Zoek r Reset u Terug ^Q Stop => F1 Help F2 Edit F3 New F5 Del F6/F7 Move F9 Search r Reset u Undo ^Q Quit
+items => items
+
+'' --- paneelinhoud ---
+Nog geen lijstjes. Druk op F4 om er een aan te maken. => No lists yet. Press F4 to create one.
+Leeg lijstje => Empty list
+F3 voor een nieuw item => F3 for a new item
+
+'' --- schaal (+ / -) ---
+Schaal => Scale
+is al de grens. => is already the limit.
+tekens van => characters of
+pixels => pixels
+past niet op dit scherm. => doesn't fit on this screen.
+
+'' --- helpscherm (F1) ---
+Hulp => Help
+ALGEMEEN => GENERAL
+  Tab .............. wissel tussen lijsten- en itemspaneel =>   Tab .............. switch between the lists and items panel
+  F1 ............... deze hulp =>   F1 ............... this help
+  F9 / Ctrl+F ...... zoeken in alle lijstjes =>   F9 / Ctrl+F ...... search all lists
+  Ctrl+S ........... alles opslaan =>   Ctrl+S ........... save everything
+  + / -  (F12/F11) . tekens groter / kleiner, keuze blijft bewaard =>   + / -  (F12/F11) . larger / smaller text, choice is remembered
+  Ctrl+Q ........... afsluiten (alles is al opgeslagen) =>   Ctrl+Q ........... quit (everything is already saved)
+  Esc .............. afsluiten, met bevestiging vooraf =>   Esc .............. quit, with confirmation first
+                     F10 werkt hier ook, behalve op Windows: =>                      F10 also works here, except on Windows:
+                     daar is het een systeemtoets =>                      there it's a system key
+LIJSTENPANEEL (links) => LISTS PANEL (left)
+  Pijl op/neer ..... ander lijstje kiezen =>   Arrow up/down .... choose another list
+  Enter / pijl re... naar het itemspaneel =>   Enter / arrow right ... to the items panel
+  F2 ............... lijstje hernoemen        ~  kleur wisselen =>   F2 ............... rename list              ~  change color
+  F3 / F4 .......... nieuw lijstje =>   F3 / F4 .......... new list
+  F5 / Del ......... lijstje verwijderen =>   F5 / Del ......... delete list
+ITEMSPANEEL (rechts) => ITEMS PANEL (right)
+  Spatie / Enter ... afvinken of vinkje weghalen =>   Space / Enter .... check off or uncheck
+  F3 / Insert ...... nieuw item onder de cursor =>   F3 / Insert ...... new item below the cursor
+  F2 ............... item bewerken            t  vinkje <-> tekst =>   F2 ............... edit item                t  checkbox <-> text
+  F5 / Del ......... item verwijderen         s  sorteren =>   F5 / Del ......... delete item              s  sort
+  F6 / F7 .......... item omhoog / omlaag     c  afgevinkte wissen =>   F6 / F7 .......... move item up / down      c  clear checked items
+  Pijl li/re ....... minder / meer inspringen g  volg [[verwijzing]] =>   Arrow left/right . less / more indent       g  follow [[link]]
+  Home/End/PgUp/Dn . snel navigeren =>   Home/End/PgUp/Dn . quick navigation
+LIJSTJE OPNIEUW GEBRUIKEN => REUSING A LIST
+  r ................ alle vinkjes van dit lijstje uitzetten =>   r ................ clear all checks in this list
+  u ................ die reset weer ongedaan maken =>   u ................ undo that reset
+Elk lijstje is een los Markdown-bestand in de gegevensmap. => Each list is a separate Markdown file in the data folder.
+Druk op een toets... => Press any key...
+Pijl op/neer schuift => Arrow up/down scrolls
+van => of
+Esc sluit => Esc closes
+
+'' --- dialoogvenster-kern (Venster/Melden/Bevestig/VraagTekst) ---
+Bevestigen => Confirm
+J = ja      N = nee (Esc) => Y = yes     N = no (Esc)
+Enter = ok   Esc = annuleren   Ctrl+U = leegmaken => Enter = ok   Esc = cancel   Ctrl+U = clear
+
+'' --- nieuw lijstje / hernoemen / zoeken ---
+Nieuw lijstje => New list
+Titel van het lijstje: => Title of the list:
+Hernoemen => Rename
+Nieuwe titel: => New title:
+Zoeken => Search
+Zoek naar (in alle lijstjes): => Search for (in all lists):
+Enter = ga er naartoe   Esc = sluiten => Enter = go there   Esc = close
+
+'' --- meldingen (Melden / statusregel) ---
+Maak eerst een lijstje aan (F4). => First create a list (F4).
+Regel is leeg. Item verwijderen? => Line is empty. Delete item?
+Geen verwijzing [[...]] op deze regel. => No link [[...]] on this line.
+Onafgesloten verwijzing op deze regel. => Unclosed link on this line.
+Gesorteerd: afgevinkte items onderaan. => Sorted: checked items at the bottom.
+Er zijn geen afgevinkte items. => There are no checked items.
+In dit lijstje staat niets aangevinkt. => Nothing is checked in this list.
+u maakt dit ongedaan => press u to undo this
+Er is geen reset om ongedaan te maken. => There is no reset to undo.
+Dat lijstje bestaat niet meer. => That list no longer exists.
+Het lijstje is sindsdien gewijzigd; niet teruggedraaid. => The list has changed since then; not undone.
+Reset teruggedraaid. => Reset undone.
+Lijstje verwijderd. => List deleted.
+Alle lijstjes opgeslagen in => All lists saved in
+
+'' --- afsluiten / foutmelding bij te klein scherm ---
+alles opgeslagen in => everything saved in
+Maak het venster of de terminal groter, of kies een kleinere schaal. => Make the window or terminal bigger, or choose a smaller scale.
+
+'' --- sjablonen met %1/%2/%3 (Tn) ---
+%1 afsluiten? => Quit %1?
+Lijstje '%1' aangemaakt. => List '%1' created.
+Hernoemd naar '%1'. => Renamed to '%1'.
+Lijstje '%1' verwijderen? => Delete list '%1'?
+Maximaal %1 lijstjes. => Maximum of %1 lists.
+Dit lijstje is vol (%1 regels). => This list is full (%1 lines).
+Item '%1' verwijderen? => Delete item '%1'?
+%1 afgevinkte item(s) definitief wissen? => Permanently delete %1 checked item(s)?
+%1 item(s) gewist. => %1 item(s) deleted.
+%1 vinkje(s) gewist => %1 check(s) cleared
+Gesprongen naar '%1'. => Jumped to '%1'.
+Geen lijstje met de titel '%1'. => No list with the title '%1'.
+Niets gevonden voor '%1'. => Nothing found for '%1'.
+Gevonden: %1 => Found: %1
+Gevonden in '%1'. => Found in '%1'.
+Kan %1 niet schrijven! => Cannot write %1!
+%1 lijstje(s). Tot ziens! => %1 list(s). Goodbye!
+Lijstjes: er is te weinig ruimte (minimaal %1 x %2 tekens). => Lijstjes: not enough room (minimum %1 x %2 characters).
