@@ -7,9 +7,9 @@ geschreven in FreeBASIC (fblite-dialect). Het draait in een grafisch venster
 en bewaart elk lijstje als een gewoon Markdown-bestand — dus ook prima te
 lezen en te bewerken buiten het programma om.
 
-De stijl is geïnspireerd op klassieke tekst-UI's zoals WordFB: twee panelen
-naast elkaar (lijstjes links, items rechts), volledig met het toetsenbord te
-bedienen.
+De stijl is geïnspireerd op klassieke tekst-UI's zoals MS Edit. Er zijn twee 
+panelen naast elkaar (lijstjes links, items rechts), volledig met het 
+toetsenbord te bedienen.
 
 ## Kenmerken
 
