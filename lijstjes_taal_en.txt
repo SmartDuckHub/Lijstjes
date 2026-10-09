@@ -37,7 +37,8 @@ ALGEMEEN => GENERAL
   F1 ............... deze hulp =>   F1 ............... this help
   F9 / Ctrl+F ...... zoeken in alle lijstjes =>   F9 / Ctrl+F ...... search all lists
   Ctrl+S ........... alles opslaan =>   Ctrl+S ........... save everything
-  + / -  (F12/F11) . tekens groter / kleiner, keuze blijft bewaard =>   + / -  (F12/F11) . larger / smaller text, choice is remembered
+  Ctrl+N ........... tekengrootte wisselen, past niet = 1x; blijft bewaard =>   Ctrl+N ........... change text size, too big = 1x; remembered
+  Ctrl+Z ........... over Lijstjes (versie, auteur, licentie) =>   Ctrl+Z ........... about Lijstjes (version, author, license)
   Ctrl+Q ........... afsluiten (alles is al opgeslagen) =>   Ctrl+Q ........... quit (everything is already saved)
   Esc .............. afsluiten, met bevestiging vooraf =>   Esc .............. quit, with confirmation first
                      F10 werkt hier ook, behalve op Windows: =>                      F10 also works here, except on Windows:
@@ -118,3 +119,12 @@ Gevonden in '%1'. => Found in '%1'.
 Kan %1 niet schrijven! => Cannot write %1!
 %1 lijstje(s). Tot ziens! => %1 list(s). Goodbye!
 Lijstjes: er is te weinig ruimte (minimaal %1 x %2 tekens). => Lijstjes: not enough room (minimum %1 x %2 characters).
+
+'' --- Over-pagina (Ctrl+Z) ---
+Over => About
+Lijstjes en notities in een grafisch venster, => Lists and notes in a graphical window,
+in de stijl van de Turbo Pascal editor. => in the style of the Turbo Pascal editor.
+Licentie => License
+Gegevensmap => Data folder
+Taal => Language
+%1 lijstje(s), %2 regels in totaal => %1 list(s), %2 lines in total

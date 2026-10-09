@@ -1,7 +1,7 @@
 #lang "fblite"
 
 ' ==========================================================================
-'  Lijstjes 0.1  --  lijstjes & notities, in een grafisch venster
+'  Lijstjes 1.0  --  lijstjes & notities, in een grafisch venster
 '  In de stijl van de Turbo Pascal editor (FreeBASIC / fblite dialect)
 '
 '  Copyright 2026 door Marcel "SmartDuck" Beekman
@@ -13,9 +13,9 @@
 '				fbc -lang fblite  "%f"
 '
 '  Starten :   lijstjes [map] [-zN] [-wBxH] [-a|-c]
-'                map = map met .md bestanden (standaard: <exepad>/lijstjes)
+'                map = map met .md bestanden (standaard: <exepad>/data)
 '                -zN = tekens N keer zo groot (1..6); anders de laatst gekozen
-'                      schaal uit lijstjes.cfg. Tijdens het draaien met + en -.
+'                      schaal uit lijstjes.cfg. Tijdens het draaien met Ctrl+N.
 '                -wBxH = venster nooit groter dan B bij H pixels, bv. -w640x480
 '                -a  = ASCII-randen  (standaard: CP437-randen)
 '                -c  = CP437-randen  (standaard)
@@ -44,7 +44,7 @@ Const MAX_HITS  = 200
 Const MAX_TXT   = 200
 Const TAAL_MAX  = 200      '' max. aantal regels in een vertaalbestand
 Const APP_NAAM  = "Lijstjes"
-Const APP_VER   = "0.1"
+Const APP_VER   = "1.0"
 Const SEP       = "/"
 
 '' --- grafische modus -----------------------------------------------------
@@ -61,7 +61,8 @@ Const SEP       = "/"
 ''  Bij schaal 1 tekent FB zelf met het ingebouwde 8x16 font (snel); bij een
 ''  hogere schaal tekenen we de tekens zelf, vergroot.
 ''
-''  SetScale() past de schaal tijdens het draaien aan. Standaard blijft de
+''  SetScale() past de schaal tijdens het draaien aan (Ctrl+N loopt de schalen
+''  rond; past een schaal niet, dan volgt weer 1x). Standaard blijft de
 ''  indeling 80 x 30 en groeit het venster mee. Is er een harde vensterlimiet
 ''  gezet (-wBxH, of het bureaublad is te klein), dan blijft het venster gelijk
 ''  en krimpt het aantal cellen. Dus met -w640x480:
@@ -159,7 +160,8 @@ Declare Sub ZetGlyphs(ByVal asciiModus As Integer)
 Declare Sub ZetPalet()
 Declare Sub Indeling()
 Declare Function SetScale(ByVal nieuw As Integer) As Integer
-Declare Sub SchaalWijzig(ByVal delta As Integer)
+Declare Function SchaalPast(ByVal n As Integer) As Integer
+Declare Sub SchaalCyclus()
 Declare Sub LaadInstellingen()
 Declare Sub BewaarInstellingen()
 Declare Function DetecteerTaal() As String
@@ -183,6 +185,7 @@ Declare Function Bevestig(ByRef vraag As String) As Integer
 Declare Function RegelEdit(ByVal r As Integer, ByVal c As Integer, ByVal w As Integer, ByRef start As String, ByRef ok As Integer) As String
 Declare Function VraagTekst(ByRef titel As String, ByRef prompt As String, ByRef start As String, ByRef ok As Integer) As String
 Declare Sub ToonHelp()
+Declare Sub ToonOver()
 
 Declare Function MaakBestandsnaam(ByRef t As String, ByVal negeer As Integer) As String
 Declare Sub LaadAlles()
@@ -333,24 +336,60 @@ Function SetScale(ByVal nieuw As Integer) As Integer
     SetScale = -1
 End Function
 
-'' Past de schaal een stap aan en onthoudt de keuze voor de volgende keer.
-Sub SchaalWijzig(ByVal delta As Integer)
+'' Past schaal n met de volledige indeling (VEN_KOL x VEN_RIJ cellen) op het
+'' bureaublad? SetScale zelf laat het venster krimpen (minder cellen) zolang
+'' MIN_KOL x MIN_RIJ nog past, maar voor het rondlopen met Ctrl+N tellen we
+'' alleen schalen die de hele indeling kwijt kunnen. Een expliciete limiet
+'' (-wBxH) gaat voor: daarbij beslist SetScale, zoals beschreven bovenaan.
+'' Is de bureaubladgrootte onbekend, dan is er niets om op te toetsen.
+Function SchaalPast(ByVal n As Integer) As Integer
+    Dim maxB As Integer, maxH As Integer
+
+    SchaalPast = -1
+    If n <= 1 Then Exit Function
+
+    If venMaxB <= 0 And bureauB > 0 Then
+        maxB = bureauB - bureauB \ 20
+        If VEN_KOL * 8 * n > maxB Then SchaalPast = 0
+    End If
+    If venMaxH <= 0 And bureauH > 0 Then
+        maxH = bureauH - bureauH \ 12
+        If VEN_RIJ * 16 * n > maxH Then SchaalPast = 0
+    End If
+End Function
+
+'' Ctrl+N: loopt de schaal rond (1x -> 2x -> ... -> MAX_SCH -> 1x). Past de
+'' volgende schaal niet op het scherm, dan gaat het programma terug naar 1x.
+'' De gekozen schaal wordt bewaard voor de volgende keer.
+Sub SchaalCyclus()
     Dim gevraagd As Integer
+    Dim terug As Integer
 
-    gevraagd = fontSchaal + delta
-    If gevraagd < 1 Or gevraagd > MAX_SCH Then
-        melding = Vt("Schaal") + " " + Trim(Str(fontSchaal)) + "x " + Vt("is al de grens.")
-        Exit Sub
+    gevraagd = fontSchaal + 1
+    If gevraagd > MAX_SCH Then gevraagd = 1
+
+    terug = 0
+    If SchaalPast(gevraagd) = 0 Then
+        '' Te groot voor het scherm: meteen terug naar 1x.
+        terug = gevraagd
+        gevraagd = 1
     End If
 
-    If SetScale(gevraagd) Then
-        BewaarInstellingen
-        melding = Vt("Schaal") + " " + Trim(Str(fontSchaal)) + "x  " + gPunt + "  " + _
-                  Trim(Str(scrW)) + "x" + Trim(Str(scrH)) + " " + Vt("tekens van") + " " + _
-                  Trim(Str(celB)) + "x" + Trim(Str(celH)) + " " + Vt("pixels")
-    Else
-        melding = Vt("Schaal") + " " + Trim(Str(gevraagd)) + "x " + Vt("past niet op dit scherm.")
+    If SetScale(gevraagd) = 0 Then
+        '' Past niet: terug naar 1x. (Als we al op 1x stonden, is er niets
+        '' te cyclen en blijft alles zoals het was.)
+        If terug = 0 Then terug = gevraagd
+        If gevraagd = 1 Or SetScale(1) = 0 Then
+            melding = Vt("Schaal") + " " + Trim(Str(terug)) + "x " + Vt("past niet op dit scherm.")
+            Exit Sub
+        End If
     End If
+
+    BewaarInstellingen
+    melding = Vt("Schaal") + " " + Trim(Str(fontSchaal)) + "x  " + gPunt + "  " + _
+              Trim(Str(scrW)) + "x" + Trim(Str(scrH)) + " " + Vt("tekens van") + " " + _
+              Trim(Str(celB)) + "x" + Trim(Str(celH)) + " " + Vt("pixels")
+    If terug > 0 Then melding = Vt("Schaal") + " " + Trim(Str(terug)) + "x " + Vt("past niet op dit scherm.") + "  " + gPunt + "  " + melding
 End Sub
 
 Sub LaadInstellingen()
@@ -1022,7 +1061,7 @@ Function VraagTekst(ByRef titel As String, ByRef prompt As String, ByRef start A
 End Function
 
 Sub ToonHelp()
-    Const HELP_N = 32
+    Const HELP_N = 33
     Dim r As Integer, c As Integer, w As Integer, h As Integer
     Dim i As Integer, ext As Integer, t As Integer
     Dim hTop As Integer, rijen As Integer
@@ -1034,33 +1073,34 @@ Sub ToonHelp()
     h1(3)  = Vt("  F1 ............... deze hulp")
     h1(4)  = Vt("  F9 / Ctrl+F ...... zoeken in alle lijstjes")
     h1(5)  = Vt("  Ctrl+S ........... alles opslaan")
-    h1(6)  = Vt("  + / -  (F12/F11) . tekens groter / kleiner, keuze blijft bewaard")
-    h1(7)  = Vt("  Ctrl+Q ........... afsluiten (alles is al opgeslagen)")
-    h1(8)  = Vt("  Esc .............. afsluiten, met bevestiging vooraf")
-    h1(9)  = Vt("                     F10 werkt hier ook, behalve op Windows:")
-    h1(10) = Vt("                     daar is het een systeemtoets")
-    h1(11) = ""
-    h1(12) = Vt("LIJSTENPANEEL (links)")
-    h1(13) = Vt("  Pijl op/neer ..... ander lijstje kiezen")
-    h1(14) = Vt("  Enter / pijl re... naar het itemspaneel")
-    h1(15) = Vt("  F2 ............... lijstje hernoemen        ~  kleur wisselen")
-    h1(16) = Vt("  F3 / F4 .......... nieuw lijstje")
-    h1(17) = Vt("  F5 / Del ......... lijstje verwijderen")
-    h1(18) = ""
-    h1(19) = Vt("ITEMSPANEEL (rechts)")
-    h1(20) = Vt("  Spatie / Enter ... afvinken of vinkje weghalen")
-    h1(21) = Vt("  F3 / Insert ...... nieuw item onder de cursor")
-    h1(22) = Vt("  F2 ............... item bewerken            t  vinkje <-> tekst")
-    h1(23) = Vt("  F5 / Del ......... item verwijderen         s  sorteren")
-    h1(24) = Vt("  F6 / F7 .......... item omhoog / omlaag     c  afgevinkte wissen")
-    h1(25) = Vt("  Pijl li/re ....... minder / meer inspringen g  volg [[verwijzing]]")
-    h1(26) = Vt("  Home/End/PgUp/Dn . snel navigeren")
-    h1(27) = ""
-    h1(28) = Vt("LIJSTJE OPNIEUW GEBRUIKEN")
-    h1(29) = Vt("  r ................ alle vinkjes van dit lijstje uitzetten")
-    h1(30) = Vt("  u ................ die reset weer ongedaan maken")
-    h1(31) = ""
-    h1(32) = Vt("Elk lijstje is een los Markdown-bestand in de gegevensmap.")
+    h1(6)  = Vt("  Ctrl+N ........... tekengrootte wisselen, past niet = 1x; blijft bewaard")
+    h1(7)  = Vt("  Ctrl+Z ........... over Lijstjes (versie, auteur, licentie)")
+    h1(8)  = Vt("  Ctrl+Q ........... afsluiten (alles is al opgeslagen)")
+    h1(9)  = Vt("  Esc .............. afsluiten, met bevestiging vooraf")
+    h1(10)  = Vt("                     F10 werkt hier ook, behalve op Windows:")
+    h1(11) = Vt("                     daar is het een systeemtoets")
+    h1(12) = ""
+    h1(13) = Vt("LIJSTENPANEEL (links)")
+    h1(14) = Vt("  Pijl op/neer ..... ander lijstje kiezen")
+    h1(15) = Vt("  Enter / pijl re... naar het itemspaneel")
+    h1(16) = Vt("  F2 ............... lijstje hernoemen        ~  kleur wisselen")
+    h1(17) = Vt("  F3 / F4 .......... nieuw lijstje")
+    h1(18) = Vt("  F5 / Del ......... lijstje verwijderen")
+    h1(19) = ""
+    h1(20) = Vt("ITEMSPANEEL (rechts)")
+    h1(21) = Vt("  Spatie / Enter ... afvinken of vinkje weghalen")
+    h1(22) = Vt("  F3 / Insert ...... nieuw item onder de cursor")
+    h1(23) = Vt("  F2 ............... item bewerken            t  vinkje <-> tekst")
+    h1(24) = Vt("  F5 / Del ......... item verwijderen         s  sorteren")
+    h1(25) = Vt("  F6 / F7 .......... item omhoog / omlaag     c  afgevinkte wissen")
+    h1(26) = Vt("  Pijl li/re ....... minder / meer inspringen g  volg [[verwijzing]]")
+    h1(27) = Vt("  Home/End/PgUp/Dn . snel navigeren")
+    h1(28) = ""
+    h1(29) = Vt("LIJSTJE OPNIEUW GEBRUIKEN")
+    h1(30) = Vt("  r ................ alle vinkjes van dit lijstje uitzetten")
+    h1(31) = Vt("  u ................ die reset weer ongedaan maken")
+    h1(32) = ""
+    h1(33) = Vt("Elk lijstje is een los Markdown-bestand in de gegevensmap.")
 
     '' Het venster past zich aan de beschikbare ruimte aan: bij een grote schaal
     '' zijn er minder cellen, dus dan wordt de hulp schuifbaar.
@@ -1116,6 +1156,61 @@ Sub ToonHelp()
         Else
             If t <> 0 Then Exit Do
         End If
+    Loop
+
+    Redraw
+End Sub
+
+'' Over-pagina (Ctrl+Z): naam, versie, auteur, licentie en wat huidige
+'' instellingen. Elke toets sluit hem weer.
+Sub ToonOver()
+    Dim r As Integer, c As Integer, w As Integer, h As Integer
+    Dim ext As Integer, t As Integer
+    Dim i As Integer, tot As Integer
+    Dim regel(1 To 12) As String
+    Dim n As Integer
+
+    tot = 0
+    For i = 1 To nLijsten
+        tot = tot + lijst(i).aantal
+    Next
+
+    n = 0
+    n = n + 1 : regel(n) = APP_NAAM + " " + APP_VER
+    n = n + 1 : regel(n) = Vt("Lijstjes en notities in een grafisch venster,")
+    n = n + 1 : regel(n) = Vt("in de stijl van de Turbo Pascal editor.")
+    n = n + 1 : regel(n) = ""
+    n = n + 1 : regel(n) = "Copyright 2026 Marcel " + Chr(34) + "SmartDuck" + Chr(34) + " Beekman"
+    n = n + 1 : regel(n) = Vt("Licentie") + ": BSD 3-Clause"
+    n = n + 1 : regel(n) = ""
+    n = n + 1 : regel(n) = Vt("Gegevensmap") + ": " + dataMap
+    n = n + 1 : regel(n) = Tn("%1 lijstje(s), %2 regels in totaal", Trim(Str(nLijsten)), Trim(Str(tot)), "")
+    n = n + 1 : regel(n) = Vt("Taal") + ": " + HuidigeTaal + "   " + Vt("Schaal") + ": " + Trim(Str(fontSchaal)) + "x"
+    n = n + 1 : regel(n) = ""
+    n = n + 1 : regel(n) = Vt("Druk op een toets...")
+
+    w = 62
+    If w > scrW - 2 Then w = scrW - 2
+    h = n + 2
+    If h > scrH - 2 Then h = scrH - 2
+    r = (scrH - h) \ 2 + 1
+    c = (scrW - w) \ 2 + 1
+
+    Venster r, c, h, w, Vt("Over") + " " + APP_NAAM
+    For i = 1 To h - 2
+        If i <= n Then
+            If i = 1 Then
+                PutStr r + i, c + (w - Len(regel(i))) \ 2, Kort(regel(i), w - 4), C_DLG_FG, C_DLG_BG
+            Else
+                PutStr r + i, c + 2, Kort(regel(i), w - 4), C_DLG_FG, C_DLG_BG
+            End If
+        End If
+    Next
+
+    Do
+        ext = 0
+        t = WachtToets(ext)
+        If t <> 0 Or ext <> 0 Then Exit Do
     Loop
 
     Redraw
@@ -2066,7 +2161,6 @@ venMaxB    = 0
 venMaxH    = 0
 schaalGezet = 0
 dataMap    = ExePath + SEP + "data"
-
 For i = 1 To 8
     arg = Command(i)
     If Len(arg) = 0 Then Exit For
@@ -2143,10 +2237,6 @@ Do
             klaar = -1
         Case 107                                    '' sluitknop van het venster
             klaar = -1
-        Case 133                                    '' F11: kleiner
-            SchaalWijzig -1
-        Case 134                                    '' F12: groter
-            SchaalWijzig 1
         Case 72                                     '' pijl omhoog
             If paneel = 0 Then
                 If curL > 1 Then curL = curL - 1
@@ -2240,10 +2330,10 @@ Do
             ResetTerug
         Case Asc("~")
             KiesKleur
-        Case 43, 61                                 '' + en =  : groter
-            SchaalWijzig 1
-        Case 45, 95                                 '' - en _  : kleiner
-            SchaalWijzig -1
+        Case 14                                     '' Ctrl+N: schaal rondlopen
+            SchaalCyclus
+        Case 26                                     '' Ctrl+Z: over Lijstjes
+            ToonOver
         End Select
     End If
 
