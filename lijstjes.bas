@@ -1177,15 +1177,13 @@ Sub ToonOver()
 
     n = 0
     n = n + 1 : regel(n) = APP_NAAM + " " + APP_VER
-    n = n + 1 : regel(n) = Vt("Lijstjes en notities in een grafisch venster,")
-    n = n + 1 : regel(n) = Vt("in de stijl van de Turbo Pascal editor.")
+    n = n + 1 : regel(n) = Vt("Lijstjes en notities,")
+    n = n + 1 : regel(n) = Vt("in de stijl van de jaren 80 editors.")
     n = n + 1 : regel(n) = ""
     n = n + 1 : regel(n) = "Copyright 2026 Marcel " + Chr(34) + "SmartDuck" + Chr(34) + " Beekman"
     n = n + 1 : regel(n) = Vt("Licentie") + ": BSD 3-Clause"
     n = n + 1 : regel(n) = ""
-    n = n + 1 : regel(n) = Vt("Gegevensmap") + ": " + dataMap
-    n = n + 1 : regel(n) = Tn("%1 lijstje(s), %2 regels in totaal", Trim(Str(nLijsten)), Trim(Str(tot)), "")
-    n = n + 1 : regel(n) = Vt("Taal") + ": " + HuidigeTaal + "   " + Vt("Schaal") + ": " + Trim(Str(fontSchaal)) + "x"
+    n = n + 1 : regel(n) = "Web: marcelsoffice.smartduck.nl"
     n = n + 1 : regel(n) = ""
     n = n + 1 : regel(n) = Vt("Druk op een toets...")
 
