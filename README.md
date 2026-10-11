@@ -23,11 +23,32 @@ lijstjes [map] [-zN] [-wBxH] [-a|-c]
 
 | Optie   | Betekenis |
 |---------|-----------|
-| `map`   | Map met `.md`-bestanden. Standaard: de map `data` naast het programma. |
+| `map`   | Map met `.md`-bestanden. Standaard: je eigen gegevensmap, zie "Waar staan mijn gegevens?". |
 | `-zN`   | Tekens N keer zo groot (1 t/m 6). Zonder deze optie geldt de laatst gekozen schaal uit `lijstjes.cfg`. |
 | `-wBxH` | Venster nooit groter dan B bij H pixels, bijvoorbeeld `-w640x480`. |
 | `-a`    | ASCII-randen. |
 | `-c`    | CP437-randen (standaard). |
+
+## Waar staan mijn gegevens?
+
+Elke gebruiker heeft zijn eigen lijstjes, ook op een computer die door meer
+mensen wordt gebruikt. De map wordt bij de eerste start automatisch aangemaakt,
+inclusief de tussenmap `MarcelsOffice`.
+
+| Systeem | Gegevensmap |
+|---------|-------------|
+| Windows | `%APPDATA%\MarcelsOffice\Lijstjes`, bijvoorbeeld `C:\Users\<naam>\AppData\Roaming\MarcelsOffice\Lijstjes` |
+| Linux   | `$XDG_DATA_HOME/MarcelsOffice/Lijstjes`; is die niet gezet, dan `~/.local/share/MarcelsOffice/Lijstjes` |
+
+Wat Windows of Linux is, wordt bij het compileren bepaald en niet tijdens het
+draaien. Daardoor kiest een Windows-versie onder Wine ook de Windows-map.
+
+In die map staan de lijstjes (`.md`) en `lijstjes.cfg`. Is de basismap niet te
+bepalen (`APPDATA` of `HOME` ontbreekt), dan gebruikt het programma de map
+`data` naast het programma. Met `lijstjes <map>` kies je zelf een andere map.
+
+Het vertaalbestand `lijstjes_taal_en.txt` blijft naast het programma staan en
+wordt alleen gelezen.
 
 ## Bediening
 
@@ -143,7 +164,8 @@ Er worden maximaal 200 vertaalregels ingelezen.
 
 ## Instellingen
 
-`lijstjes.cfg` staat in de gegevensmap en mag met de hand worden aangepast:
+`lijstjes.cfg` staat in je eigen gegevensmap, dus elke gebruiker heeft eigen
+instellingen, en mag met de hand worden aangepast:
 
 ```
 schaal=1

@@ -128,3 +128,8 @@ Licentie => License
 Gegevensmap => Data folder
 Taal => Language
 %1 lijstje(s), %2 regels in totaal => %1 list(s), %2 lines in total
+
+'' --- Over-pagina (aangepaste tekst) en gegevensmap ---
+Lijstjes en notities, => Lists and notes,
+in de stijl van de jaren 80 editors. => in the style of 80s editors.
+%1: kan de gegevensmap niet aanmaken: => %1: cannot create the data folder:

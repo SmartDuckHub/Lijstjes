@@ -1,7 +1,7 @@
 #lang "fblite"
 
 ' ==========================================================================
-'  Lijstjes 1.0  --  lijstjes & notities, in een grafisch venster
+'  Lijstjes 1.1  --  lijstjes & notities, in een grafisch venster
 '  In de stijl van de Turbo Pascal editor (FreeBASIC / fblite dialect)
 '
 '  Copyright 2026 door Marcel "SmartDuck" Beekman
@@ -13,7 +13,11 @@
 '				fbc -lang fblite  "%f"
 '
 '  Starten :   lijstjes [map] [-zN] [-wBxH] [-a|-c]
-'                map = map met .md bestanden (standaard: <exepad>/data)
+'                map = map met .md bestanden. Standaard de eigen map van de
+'                      gebruiker (aangemaakt bij de eerste start):
+'                        Windows: %APPDATA%\MarcelsOffice\Lijstjes
+'                        Linux  : $XDG_DATA_HOME of ~/.local/share, met daarin
+'                                 MarcelsOffice/Lijstjes
 '                -zN = tekens N keer zo groot (1..6); anders de laatst gekozen
 '                      schaal uit lijstjes.cfg. Tijdens het draaien met Ctrl+N.
 '                -wBxH = venster nooit groter dan B bij H pixels, bv. -w640x480
@@ -44,8 +48,12 @@ Const MAX_HITS  = 200
 Const MAX_TXT   = 200
 Const TAAL_MAX  = 200      '' max. aantal regels in een vertaalbestand
 Const APP_NAAM  = "Lijstjes"
-Const APP_VER   = "1.0"
+Const APP_VER   = "1.1"
+#ifdef __FB_WIN32__
+Const SEP       = "\"
+#else
 Const SEP       = "/"
+#endif
 
 '' --- grafische modus -----------------------------------------------------
 ''  Lijstjes draait altijd via de gfxlib-driver van FB: die vangt op elk
@@ -186,6 +194,9 @@ Declare Function RegelEdit(ByVal r As Integer, ByVal c As Integer, ByVal w As In
 Declare Function VraagTekst(ByRef titel As String, ByRef prompt As String, ByRef start As String, ByRef ok As Integer) As String
 Declare Sub ToonHelp()
 Declare Sub ToonOver()
+Declare Function GebruikersMap() As String
+Declare Sub MaakMap(ByRef doelPad As String)
+Declare Function MapBestaat(ByRef doelPad As String) As Integer
 
 Declare Function MaakBestandsnaam(ByRef t As String, ByVal negeer As Integer) As String
 Declare Sub LaadAlles()
@@ -1214,6 +1225,73 @@ Sub ToonOver()
     Redraw
 End Sub
 
+'' --- gegevensmap per gebruiker ----------------------------------------------
+''  De keuze tussen Windows en Linux wordt bij het compileren gemaakt
+''  (#ifdef), niet tijdens het draaien: onder Wine is HOME namelijk ook gevuld.
+''    Windows : %APPDATA%\MarcelsOffice\Lijstjes
+''              (C:\Users\<naam>\AppData\Roaming\MarcelsOffice\Lijstjes)
+''    Linux   : $XDG_DATA_HOME/MarcelsOffice/Lijstjes, of als die leeg is
+''              $HOME/.local/share/MarcelsOffice/Lijstjes
+''  Geeft "" terug als de basismap niet te bepalen is; de aanroeper valt dan
+''  terug op <exepad>/data.
+Function GebruikersMap() As String
+    Dim grond As String
+
+    GebruikersMap = ""
+
+#ifdef __FB_WIN32__
+    grond = Environ("APPDATA")
+    If Len(grond) = 0 Then Exit Function
+    Do While Right(grond, 1) = "\" Or Right(grond, 1) = "/"
+        grond = Left(grond, Len(grond) - 1)
+    Loop
+    If Len(grond) = 0 Then Exit Function
+    GebruikersMap = grond + "\MarcelsOffice\Lijstjes"
+#else
+    grond = Environ("XDG_DATA_HOME")
+    '' volgens de XDG-afspraak telt alleen een absoluut pad
+    If Left(grond, 1) <> "/" Then grond = ""
+    If Len(grond) = 0 Then
+        grond = Environ("HOME")
+        If Len(grond) = 0 Then Exit Function
+        grond = grond + "/.local/share"
+    End If
+    Do While Right(grond, 1) = "/" And Len(grond) > 1
+        grond = Left(grond, Len(grond) - 1)
+    Loop
+    GebruikersMap = grond + "/MarcelsOffice/Lijstjes"
+#endif
+End Function
+
+'' Maakt een map aan, inclusief alle ontbrekende tussenmappen (zoals
+'' MarcelsOffice). Bestaat een deel al, dan is dat prima.
+Sub MaakMap(ByRef doelPad As String)
+    Dim i As Integer
+    Dim ch As String, vorig As String
+    Dim isScheid As Integer
+
+    For i = 2 To Len(doelPad)
+        ch = Mid(doelPad, i, 1)
+        isScheid = 0
+        If ch = "/" Then isScheid = -1
+#ifdef __FB_WIN32__
+        If ch = "\" Then isScheid = -1
+#endif
+        If isScheid Then
+            vorig = Mid(doelPad, i - 1, 1)
+            '' een dubbele scheider of "C:\" overslaan
+            If vorig <> "/" And vorig <> ":" And vorig <> "\" Then
+                MkDir Left(doelPad, i - 1)
+            End If
+        End If
+    Next
+    MkDir doelPad
+End Sub
+
+Function MapBestaat(ByRef doelPad As String) As Integer
+    MapBestaat = (Len(Dir(doelPad, 16)) > 0)
+End Function
+
 '' ==========================================================================
 ''  Bestanden
 '' ==========================================================================
@@ -2158,7 +2236,10 @@ fontSchaal = 1
 venMaxB    = 0
 venMaxH    = 0
 schaalGezet = 0
-dataMap    = ExePath + SEP + "data"
+'' Standaard: de eigen gegevensmap van de ingelogde gebruiker. Lukt dat niet
+'' (basismap onbekend), dan de oude plek naast het programma.
+dataMap    = GebruikersMap()
+If Len(dataMap) = 0 Then dataMap = ExePath + SEP + "data"
 For i = 1 To 8
     arg = Command(i)
     If Len(arg) = 0 Then Exit For
@@ -2184,11 +2265,17 @@ For i = 1 To 8
 Next
 
 ZetGlyphs asciiModus
-MkDir dataMap
+MaakMap dataMap
 
 '' Instellingen (taal, en -- tenzij -z hem al vastzette -- ook de schaal)
 '' weer oppakken.
 LaadInstellingen
+
+If MapBestaat(dataMap) = 0 Then
+    Print Tn("%1: kan de gegevensmap niet aanmaken:", APP_NAAM, "", "")
+    Print dataMap
+    End 1
+End If
 
 If SchermInit() = 0 Then
     Print Tn(APP_NAAM + ": er is te weinig ruimte (minimaal %1 x %2 tekens).", _
